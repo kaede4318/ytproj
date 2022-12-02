@@ -1,8 +1,10 @@
 import isodate
 import re
 import time
+
 from googleapiclient.discovery import build
 from datetime import timedelta
+from utils import *
 
 api_key = 'AIzaSyA_GtkfzWH22w_qtB9ACWpBeGsPMPhYgYk'
 
@@ -19,7 +21,7 @@ def total_seconds_re(vid_list):
 	pl_total_seconds = 0
 
 	for vid in vid_list:
-		duration = vid['contentDetails']['duration']
+		duration = get_vid_length(vid)
 
 		hours = hours_pattern.search(duration)
 		minutes = minutes_pattern.search(duration)
@@ -45,26 +47,14 @@ def total_seconds_iso(vid_list):
 	pl_total_seconds = 0
 
 	for vid in vid_list:
-		iso_8601_duration = vid['contentDetails']['duration'] #unformated video length: PT##H##M##S (playtime x hours, x minutes, x seconds)
+		iso_8601_duration = get_vid_length(vid) 
 		dt = isodate.parse_duration(iso_8601_duration)
 		vid_total_seconds = dt.total_seconds() #video length in seconds (int)
 
 		pl_total_seconds += vid_total_seconds
 
 	return int(pl_total_seconds)
-
-#changes yt format PT##H##M##S to HH:MM:SS (string)
-def format_yt_vid_length(total_seconds):
-	minutes, seconds = divmod(total_seconds, 60)
-	hours, minutes = divmod(minutes, 60)
-
-	#format: maybe replace later
-	if(seconds//10 == 0):
-		seconds = "0"+str(seconds)
-	if(minutes//10 == 0):
-		minutes = "0"+str(minutes)
-
-	return f'{hours}:{minutes}:{seconds}'
+	
 
 def main():
 	yt = build('youtube', 'v3', developerKey=api_key)
@@ -75,7 +65,7 @@ def main():
 	while True:
 		pl_request = yt.playlistItems().list(
 				part='contentDetails',
-				playlistId=ex_pl2,
+				playlistId=ex_pl,
 				maxResults=50,
 				pageToken=nextPageToken
 
@@ -83,7 +73,7 @@ def main():
 
 		pl_response = pl_request.execute()
 
-		vid_ids = [item['contentDetails']['videoId'] for item in pl_response['items']]
+		vid_ids = [get_vid_id(item) for item in pl_response['items']]
 		"""
 		vid_ids = []
 		for item in pl_response['items']:
@@ -109,14 +99,6 @@ def main():
 
 	yt.close()
 
-'''
-def timer():
-	start_time = time.time()
-	main()
-	result = (time.time() - start_time)
-	print(f"--- Time elapsed: {result} seconds ---")
 
-timer()
-'''
 if __name__ == "__main__":
 	main()
