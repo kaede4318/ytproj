@@ -1,3 +1,5 @@
+from googleapiclient.discovery import build
+
 def timer():
 	start_time = time.time()
 	main()
@@ -28,3 +30,16 @@ def format_yt_vid_length(total_seconds):
 		minutes = "0"+str(minutes)
 
 	return f'{hours}:{minutes}:{seconds}'
+
+
+################
+# API Requests #
+################
+
+api_key = 'AIzaSyA_GtkfzWH22w_qtB9ACWpBeGsPMPhYgYk'
+
+yt = build('youtube', 'v3', developerKey=api_key)
+
+def channels_request(**kwargs):
+	"""**kwargs are the arguments for list()"""
+	return yt.channels().list(**kwargs)
