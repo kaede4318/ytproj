@@ -43,3 +43,18 @@ yt = build('youtube', 'v3', developerKey=api_key)
 def channels_request(**kwargs):
 	"""**kwargs are the arguments for list()"""
 	return yt.channels().list(**kwargs)
+
+
+def playlistItems_request(**kwargs):
+	"""**kwargs are the arguments for list()"""
+	return yt.playlistItems().list(**kwargs)
+
+
+def videos_request(**kwargs):
+	"""**kwargs are the arguments for list()"""
+	return yt.videos().list(**kwargs)
+
+
+yt.close()
+
+

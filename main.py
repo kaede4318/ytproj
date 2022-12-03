@@ -1,8 +1,7 @@
-from googleapiclient.discovery import build
 
-api_key = 'AIzaSyA_GtkfzWH22w_qtB9ACWpBeGsPMPhYgYk'
+from utils import *
 
-yt = build('youtube', 'v3', developerKey=api_key)
+
 
 def display_channel_stats(resp):
 	
@@ -19,11 +18,8 @@ while(True):
 	if(username == 'exit'):
 		break
 
-	request = yt.channels().list(
-			part='statistics',
-			forUsername=username
-
-		)
+	
+	request = channels_request(part='statistics', forUsername=username)
 
 	response = request.execute()
 
