@@ -18,18 +18,20 @@ def get_vid_id(vid):
 	return vid['contentDetails']['videoId']
 
 
-def format_yt_vid_length(total_seconds):
-	"""changes yt format PT##H##M##S to HH:MM:SS (returns a string)"""
+def timestamp(total_seconds):
+	"""changes seconds integer to HH:MM:SS (returns a string)"""
 	minutes, seconds = divmod(total_seconds, 60)
 	hours, minutes = divmod(minutes, 60)
 
-	#formatting logic: maybe replace later
-	if(seconds//10 == 0):
-		seconds = "0"+str(seconds)
-	if(minutes//10 == 0):
-		minutes = "0"+str(minutes)
+	
+	#format so single digits have a leading 0
+	seconds = f"{seconds:02d}" 
+	if(hours == 0):
+		return f'{minutes}:{seconds}'
 
-	return f'{hours}:{minutes}:{seconds}'
+	else:
+		minutes = f"{minutes:02d}"
+		return f'{hours}:{minutes}:{seconds}'
 
 
 ################

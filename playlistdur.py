@@ -5,6 +5,7 @@ import time
 from googleapiclient.discovery import build
 from datetime import timedelta
 from utils import *
+from classes import *
 
 
 
@@ -81,12 +82,12 @@ def calc_playlist_duration(id):
 		if not nextPageToken: #breaks if next page does not exist
 			break
 
-	return format_yt_vid_length(total_seconds)
+	return timestamp(total_seconds)
 
 
 def find_playlist_owner(id):
 	"""Finds the owner of the playlist
-	Currently only finds who put the first video in the playlist. NEED CHANGES IN THE FUTURE"""
+	"""
 
 	nextPageToken = None
 
@@ -94,5 +95,13 @@ def find_playlist_owner(id):
 
 	pl_response = pl_request.execute()
 
-	return pl_response['items'][0]['snippet'].get('channelTitle')
+	lst = [pl_response['items'][n]['snippet'].get('channelTitle') for n in range(len(pl_response['items']))]
 
+	if(len(set(lst)) == 0):
+		raise ProgramError("Cannot have empty playlist")
+
+	elif(len(set(lst)) == 1):
+		return pl_response['items'][0]['snippet'].get('channelTitle')
+
+	else:
+		return "Multiple authors"
