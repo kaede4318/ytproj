@@ -42,7 +42,7 @@ def total_seconds_re(vid_list):
 #calculates the total length in seconds using isodate utility functions, returns seconds as an int
 def total_seconds_iso(vid_list):
 	pl_total_seconds = 0
-
+	
 	for vid in vid_list:
 		iso_8601_duration = get_vid_length(vid) 
 		dt = isodate.parse_duration(iso_8601_duration)
@@ -54,31 +54,26 @@ def total_seconds_iso(vid_list):
 
 
 def calc_playlist_duration(id):
-
+	"""Returns a timestamp representing the total length of a YouTube playlist."""
+	
 	total_seconds = 0
 
 	nextPageToken = None
 	while True:
+		#maybe change definition of util to have requests as a class.
 		pl_request = playlistItems_request(part='contentDetails', playlistId=id, maxResults=50, pageToken=nextPageToken)
-
 		pl_response = pl_request.execute()
-
-
+		print("DEBUG: ", pl_response['items'])
 		vid_ids = [get_vid_id(vid) for vid in pl_response['items']]
-		"""
-		vid_ids = []
-		for item in pl_response['items']:
-			vid_ids.append(item['contentDetails']['videoId'])
-		"""
+
 		vid_list_str = ','.join(vid_ids)
 		vid_request = videos_request(part='contentDetails', id=vid_list_str)
-
 		vid_response = vid_request.execute()
-
-		total_seconds += total_seconds_iso(vid_response['items'])
+		print("DEBUG: ", vid_response['items'])
+		total_seconds += total_seconds_iso(vid_response['items']) 
 
 		nextPageToken = pl_response.get('nextPageToken')
-
+		
 		if not nextPageToken: #breaks if next page does not exist
 			break
 
@@ -86,8 +81,10 @@ def calc_playlist_duration(id):
 
 
 def find_playlist_owner(id):
-	"""Finds the owner of the playlist
-	"""
+	"""Finds the owner of the playlist, returns a string, raises error if playlist is empty
+
+	Currently, a bug in the API exists such that a collaborative playlist doesn't differentiate
+	who added videos, the API will always return the playlist owner. Thus the else clause will not run"""
 
 	nextPageToken = None
 
@@ -101,7 +98,7 @@ def find_playlist_owner(id):
 		raise ProgramError("Cannot have empty playlist")
 
 	elif(len(set(lst)) == 1):
-		return pl_response['items'][0]['snippet'].get('channelTitle')
+		return lst[0]
 
 	else:
 		return "Multiple authors"

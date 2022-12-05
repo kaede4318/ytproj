@@ -7,17 +7,6 @@ def timer():
 	print(f"--- Time elapsed: {result} seconds ---")
 
 
-def get_vid_length(vid):
-	"""get_vid_length takes in a dictionary and returns a string representing the video playtime 
-	unformated video length: PT##H##M##S (playtime x hours, x minutes, x seconds)"""
-	return vid['contentDetails']['duration']
-
-
-def get_vid_id(vid):
-	"""get_vid_id takes in a dictionary and returns a string representing the video ID (same ID shown in yt url)"""
-	return vid['contentDetails']['videoId']
-
-
 def timestamp(total_seconds):
 	"""changes seconds integer to HH:MM:SS (returns a string)"""
 	minutes, seconds = divmod(total_seconds, 60)
@@ -33,6 +22,11 @@ def timestamp(total_seconds):
 		minutes = f"{minutes:02d}"
 		return f'{hours}:{minutes}:{seconds}'
 
+def get_video_https_link(vid_id):
+	return "https://www.youtube.com/playlist?list=" + vid_id
+
+def get_playlist_https_link(pl_id):
+	return "https://www.youtube.com/watch?v=" + pl_id
 
 ################
 # API Requests #
@@ -43,17 +37,17 @@ api_key = 'AIzaSyA_GtkfzWH22w_qtB9ACWpBeGsPMPhYgYk'
 yt = build('youtube', 'v3', developerKey=api_key)
 
 def channels_request(**kwargs):
-	"""**kwargs are the arguments for list()"""
+	"""**kwargs are the attributes for list()"""
 	return yt.channels().list(**kwargs)
 
 
 def playlistItems_request(**kwargs):
-	"""**kwargs are the arguments for list()"""
+	"""**kwargs are the attributes for list()"""
 	return yt.playlistItems().list(**kwargs)
 
 
 def videos_request(**kwargs):
-	"""**kwargs are the arguments for list()"""
+	"""**kwargs are the attributes for list()"""
 	return yt.videos().list(**kwargs)
 
 
