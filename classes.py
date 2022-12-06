@@ -1,5 +1,8 @@
 from googleapiclient.discovery import build
 from utils import *
+import os
+
+#YT_API_KEY = os.environ.get('YT_API_KEY')AIzaSyA_GtkfzWH22w_qtB9ACWpBeGsPMPhYgYk
 
 
 class ProgramError(Exception):
@@ -46,29 +49,56 @@ class Channels(Resource):
     """class methods"""
 
 
-class PlaylistItems(Resource):
-
+class PlaylistPage(Resource):
     def __init__(self, **kwargs):
-        """Create a PlaylistItems Resource object"""
         super().__init__(**kwargs)
         self.resource = self.playlistItems_request()
-        self.video_ids = self.get_vid_id_list()
-        
-        #if(len(self.video_ids) == 0):
-        #    raise InputError("playlist cannot be empty")
+        self.first = self.__dict__['pageToken']
+        print("First token: ",self.first)
+        self.next = self.get_next_page_token()
+        print("Second token: ",self.next)
 
     def playlistItems_request(self):
         query = {key: value for (key, value) in self.__dict__.items() if key != 'resource'}
         request = Resource.yt.playlistItems().list(**query)
         return request.execute()
         
-    def get_vid_id(self, vid):
-        """get_vid_id takes in a dictionary and returns a string representing the video ID (same ID shown in yt url)"""
-        return vid['contentDetails']['videoId']
+    def get_next_page_token(self):
+        try:
+            nextPageToken = self.resource['nextPageToken']
+
+        except:
+            nextPageToken = None
+
+        return nextPageToken       
 
     def get_vid_ids(self):
-        return [self.get_vid_id(vid) for vid in self.resource['items']]
+        return [vid['contentDetails']['videoId'] for vid in self.resource['items']]
 
+
+
+class PlaylistItems(PlaylistPage):
+
+    def __init__(self, pl_id):
+        """Create a PlaylistItems Resource object"""
+        self.pl_id = pl_id
+        self.playlist_pages = []
+
+        self.all_pages()
+
+
+    def all_pages(self):
+        pl = PlaylistPage(part='contentDetails', playlistId=self.pl_id, maxResults=50, pageToken=None)
+        self.playlist_pages.append(pl)
+        nextToken = pl.next
+
+        while(nextToken is not None):
+            new = PlaylistPage(part='contentDetails', playlistId=self.pl_id, maxResults=50, pageToken=nextToken)
+            self.playlist_pages.append(new)
+            nextToken = new.next
+
+
+    #maybe change to linked list
     def get_vid_id_list(self):
         """Returns a timestamp representing the total length of a YouTube playlist."""
         nextPageToken = None
@@ -80,23 +110,8 @@ class PlaylistItems(Resource):
 
             lst.extend(self.get_vid_ids())
 
-            try:
-                nextPageToken = self.resource['nextPageToken'] 
-            except:
-                nextPageToken = None
-
-            if not nextPageToken: #breaks if next page doesn't exist
-                break
-       
-            newObj = PlaylistItems(
-                part='contentDetails',
-                playlistId=original_object['playlistId'],
-                maxResults=50,
-                pageToken=nextPageToken)
-
-            self.__dict__.update(newObj.__dict__)
-
-        self.__dict__.update(original_object) #reset to original
+        print("outside loop")
+        #self.__dict__.update(original_object) #reset to original
 
         return lst
 
