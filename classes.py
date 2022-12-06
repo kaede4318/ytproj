@@ -2,7 +2,7 @@ from googleapiclient.discovery import build
 from utils import *
 import os
 
-#YT_API_KEY = os.environ.get('YT_API_KEY')AIzaSyA_GtkfzWH22w_qtB9ACWpBeGsPMPhYgYk
+#YT_API_KEY = os.environ.get("YT_API_KEY") doesn't work lol
 
 
 class ProgramError(Exception):
@@ -18,7 +18,7 @@ class InputError(Exception):
 
 class Resource:
     """All Resources share same the API key"""
-    API_KEY = 'AIzaSyA_GtkfzWH22w_qtB9ACWpBeGsPMPhYgYk'
+    API_KEY = 'AIzaSyA_GtkfzWH22w_qtB9ACWpBeGsPMPhYgYk' #change key later
 
     yt = build('youtube', 'v3', developerKey=API_KEY)
 
@@ -54,9 +54,8 @@ class PlaylistPage(Resource):
         super().__init__(**kwargs)
         self.resource = self.playlistItems_request()
         self.first = self.__dict__['pageToken']
-        print("First token: ",self.first)
         self.next = self.get_next_page_token()
-        print("Second token: ",self.next)
+        self.vid_ids = self.get_vid_ids()
 
     def playlistItems_request(self):
         query = {key: value for (key, value) in self.__dict__.items() if key != 'resource'}
@@ -75,6 +74,8 @@ class PlaylistPage(Resource):
     def get_vid_ids(self):
         return [vid['contentDetails']['videoId'] for vid in self.resource['items']]
 
+    def get_length(self):
+        return len(self.vid_ids)
 
 
 class PlaylistItems(PlaylistPage):
@@ -83,8 +84,10 @@ class PlaylistItems(PlaylistPage):
         """Create a PlaylistItems Resource object"""
         self.pl_id = pl_id
         self.playlist_pages = []
+        self.pl_id_list = []
 
         self.all_pages()
+        self.get_vid_id_list()
 
 
     def all_pages(self):
@@ -97,24 +100,15 @@ class PlaylistItems(PlaylistPage):
             self.playlist_pages.append(new)
             nextToken = new.next
 
-
     #maybe change to linked list
     def get_vid_id_list(self):
-        """Returns a timestamp representing the total length of a YouTube playlist."""
-        nextPageToken = None
-        original_object = self.__dict__
-        
+        """Returns ___""" 
         lst = []
 
-        while True:
+        for i in self.playlist_pages:
+            lst.append(i.get_vid_ids())
 
-            lst.extend(self.get_vid_ids())
-
-        print("outside loop")
-        #self.__dict__.update(original_object) #reset to original
-
-        return lst
-
+        self.pl_id_list = lst
 
     def calc_playlist_duration(self):
         """Returns a timestamp representing the total length of a YouTube playlist."""
