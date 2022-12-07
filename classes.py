@@ -30,34 +30,21 @@ class Resource:
     def end_service(self):
         yt.close()
 
-
-class Channels(Resource):
-
-    def __init__(self, **kwargs):
-        """Create a Channels Resource object"""
-        super().__init__(**kwargs)
-        self.resource = self.channels_request()
-        
-
-    def channels_request(self):
-        query = {key: value for (key, value) in self.__dict__.items() if key != 'resource'}
-        request = Resource.yt.channels().list(**query)
-        return request.execute()
-
-    def get_channel_name(self):
-        print(self.__dict__['forUsername'])
-
-    """class methods"""
+    """__str__ and __repr__"""
 
 
 class PlaylistPage(Resource):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.resource = self.playlistItems_request()
-        self.first = self.__dict__['pageToken']
-        self.next = self.get_next_page_token()
         self.vid_ids = self.get_vid_ids()
 
+        self.first = self.__dict__['pageToken']
+        self.next = self.get_next_page_token()
+
+        #self.__dict__['playlistId'] PLAYLIST ID
+
+    """__str__ and __repr__"""
 
     def playlistItems_request(self):
         query = {key: value for (key, value) in self.__dict__.items() if key != 'resource'}
@@ -74,10 +61,31 @@ class PlaylistPage(Resource):
         return nextPageToken       
 
     def get_vid_ids(self):
-        return [vid['contentDetails']['videoId'] for vid in self.resource['items']]
+        """Logic to handle new object created in get_playlist_owner"""
+        try: 
+            return [vid['contentDetails']['videoId'] for vid in self.resource['items']]
+        except:
+            return []
 
     def get_length(self):
         return len(self.vid_ids)
+
+    def get_playlist_owner(self):
+        """Finds the owner of the playlist, returns a string, raises error if playlist is empty
+
+        Currently, a bug in the API exists such that a collaborative playlist doesn't differentiate
+        who added videos, the API will always return the playlist owner. Thus the else clause will not run"""
+
+        """Create new PlaylistPage object:"""
+        pl_request = PlaylistPage(
+            part='snippet', 
+            playlistId=self.__dict__['playlistId'], 
+            maxResults=50, 
+            pageToken=self.first)
+        
+        lst = [pl_request.resource['items'][n]['snippet'].get('channelTitle') for n in range(len(pl_request.resource['items']))]
+
+        return lst
 
 
 class PlaylistItems(PlaylistPage):
@@ -91,6 +99,7 @@ class PlaylistItems(PlaylistPage):
         self.all_pages()
         self.get_vid_id_list()
 
+    """__str__ and __repr__"""
 
     def all_pages(self):
         pl = PlaylistPage(part='contentDetails', playlistId=self.pl_id, maxResults=50, pageToken=None)
@@ -115,7 +124,6 @@ class PlaylistItems(PlaylistPage):
         """Returns a list of vid_id strings."""
         return list(map(lambda x: ','.join(x), lst))
         
-
     def calc_playlist_duration(self):
         """Returns a timestamp representing the total length of a YouTube playlist."""
         total_seconds = 0
@@ -129,30 +137,46 @@ class PlaylistItems(PlaylistPage):
 
         return timestamp(total_seconds)
 
-    """
-    def find_playlist_owner(id):
-        Finds the owner of the playlist, returns a string, raises error if playlist is empty
+    
+    def find_playlist_owner(self):
+        """Finds the owner of the playlist, returns a string, raises error if playlist is empty
 
         Currently, a bug in the API exists such that a collaborative playlist doesn't differentiate
-        who added videos, the API will always return the playlist owner. Thus the else clause will not run
+        who added videos, the API will always return the playlist owner. Thus the else clause will not run"""
+        lst = []
 
-        nextPageToken = None
-
-        pl_request = playlistItems_request(part='snippet', playlistId=id, maxResults=50, pageToken=nextPageToken)
-
-        pl_response = pl_request.execute()
-
-        lst = [pl_response['items'][n]['snippet'].get('channelTitle') for n in range(len(pl_response['items']))]
+        for i in self.playlist_pages: 
+            lst.extend(i.get_playlist_owner())
 
         if(len(set(lst)) == 0):
-            raise ProgramError("Cannot have empty playlist")
+            raise ProgramError('Cannot have empty playlist')
 
         elif(len(set(lst)) == 1):
             return lst[0]
 
         else:
-            return "Multiple authors"
-    """
+            return 'Multiple authors: ' + ', '.join(lst)    #authors or owners?
+    
+
+
+class Channels(Resource):
+
+    def __init__(self, **kwargs):
+        """Create a Channels Resource object"""
+        super().__init__(**kwargs)
+        self.resource = self.channels_request()
+        
+    """__str__ and __repr__"""
+
+    def channels_request(self):
+        query = {key: value for (key, value) in self.__dict__.items() if key != 'resource'}
+        request = Resource.yt.channels().list(**query)
+        return request.execute()
+
+    def get_channel_name(self):
+        print(self.__dict__['forUsername'])
+
+    """class methods"""
 
 
 
@@ -163,7 +187,8 @@ class Videos(Resource):
         super().__init__(**kwargs)
         self.resource = self.videos_request()
        
-       
+    """__str__ and __repr__"""
+
     def videos_request(self):
         query = {key: value for (key, value) in self.__dict__.items() if key != 'resource'}
         request = Resource.yt.videos().list(**query)
@@ -175,43 +200,3 @@ class Videos(Resource):
         return vid['contentDetails']['duration']
 
 
-
-    
-
-
-
-
-
-
-
-
-"""
-class PlaylistItems(Resource):
-
-    def __init__(self, **kwargs):
-        super().__init__()
-
-    def channels_request():
-        return yt.playlistItems().list(self.query)
-
-    
-    #ONLY WORKS WITH pl_response
-    def get_vid_id(vid):
-        get_vid_id takes in a dictionary and returns a string representing the video ID (same ID shown in yt url)
-        return vid['contentDetails']['videoId']
-
-
-class Videos(Resource):
-
-    def __init__(self, **kwargs):
-        super().__init__()
-
-    def channels_request():
-        return yt.videos().list(self.query)
-
-    Class functions
-    def get_vid_length(vid):
-        get_vid_length takes in a dictionary and returns a string representing the video playtime 
-        unformated video length: PT##H##M##S (playtime x hours, x minutes, x seconds)
-        return vid['contentDetails']['duration']
-"""
