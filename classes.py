@@ -38,6 +38,7 @@ class Channels(Resource):
         super().__init__(**kwargs)
         self.resource = self.channels_request()
         
+
     def channels_request(self):
         query = {key: value for (key, value) in self.__dict__.items() if key != 'resource'}
         request = Resource.yt.channels().list(**query)
@@ -56,6 +57,7 @@ class PlaylistPage(Resource):
         self.first = self.__dict__['pageToken']
         self.next = self.get_next_page_token()
         self.vid_ids = self.get_vid_ids()
+
 
     def playlistItems_request(self):
         query = {key: value for (key, value) in self.__dict__.items() if key != 'resource'}
@@ -100,9 +102,8 @@ class PlaylistItems(PlaylistPage):
             self.playlist_pages.append(new)
             nextToken = new.next
 
-    #maybe change to linked list
     def get_vid_id_list(self):
-        """Returns ___""" 
+        """Generates list of vid_ids for each PlaylistPage object""" 
         lst = []
 
         for i in self.playlist_pages:
@@ -110,18 +111,21 @@ class PlaylistItems(PlaylistPage):
 
         self.pl_id_list = lst
 
+    def conv_to_str(self, lst):
+        """Returns a list of vid_id strings."""
+        return list(map(lambda x: ','.join(x), lst))
+        
+
     def calc_playlist_duration(self):
         """Returns a timestamp representing the total length of a YouTube playlist."""
-        #Need fix, video request to API cannot be larger than 50 videos at a time. Break the list into chunks?
-        total_seconds = 0    
-        print("DEBUG: ",len(self.video_ids))
-        vid_id_lst_str = ','.join(self.video_ids)
+        total_seconds = 0
+        lst = self.conv_to_str(self.pl_id_list)    
+        for i in lst:
+            vid_resource = Videos(
+                part='contentDetails',
+                id=i)
 
-        vid_resource = Videos(
-            part='contentDetails',
-            id=vid_id_lst_str)
-
-        total_seconds += total_seconds_iso(vid_resource.resource['items'])
+            total_seconds += total_seconds_iso(vid_resource.resource['items'])
 
         return timestamp(total_seconds)
 
@@ -158,6 +162,7 @@ class Videos(Resource):
         """Create a Channels Resource object"""
         super().__init__(**kwargs)
         self.resource = self.videos_request()
+       
        
     def videos_request(self):
         query = {key: value for (key, value) in self.__dict__.items() if key != 'resource'}
