@@ -30,7 +30,13 @@ class Resource:
     def end_service(self):
         yt.close()
 
-    """__str__ and __repr__"""
+    def __repr__(self):
+        #lst = [key+'='+str(self.__dict__.get(key)) for key in self.__dict__ if key != 'resource'] #Equivalent to below
+        #return 'Resource(' + ', '.join(lst) + ')'
+        params = ['{0}={1}'.format(k, v) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
+        return 'Resource(' + ', '.join(params) + ')'
+    
+    """__str__"""
 
 
 class PlaylistPage(Resource):
