@@ -50,7 +50,11 @@ class PlaylistPage(Resource):
 
         #self.__dict__['playlistId'] PLAYLIST ID
 
-    """__str__ and __repr__"""
+    def __repr__(self):
+        params = ['{0}={1}'.format(k, v) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
+        return 'PlaylistPage(' + ', '.join(params) + ')'
+
+    """__str__"""
 
     def playlistItems_request(self):
         query = {key: value for (key, value) in self.__dict__.items() if key != 'resource'}
@@ -67,7 +71,7 @@ class PlaylistPage(Resource):
         return nextPageToken       
 
     def get_vid_ids(self):
-        """Logic to handle new object created in get_playlist_owner"""
+        """Logic to handle temporary new object created in get_playlist_owner"""
         try: 
             return [vid['contentDetails']['videoId'] for vid in self.resource['items']]
         except:
@@ -105,7 +109,15 @@ class PlaylistItems(PlaylistPage):
         self.all_pages()
         self.get_vid_id_list()
 
-    """__str__ and __repr__"""
+    def __repr__(self):
+        params = [repr(page) for page in self.playlist_pages] 
+        return 'PlaylistItems([' + ', '.join(params) + '])' #maybe change?
+
+        """Or use this definition?
+        return 'PlaylistItems(' + self.pl_id + ')'
+        """
+
+    """__str__"""
 
     def all_pages(self):
         pl = PlaylistPage(part='contentDetails', playlistId=self.pl_id, maxResults=50, pageToken=None)
@@ -172,7 +184,11 @@ class Channels(Resource):
         super().__init__(**kwargs)
         self.resource = self.channels_request()
         
-    """__str__ and __repr__"""
+    def __repr__(self):
+        params = ['{0}={1}'.format(k, v) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
+        return 'Channels(' + ', '.join(params) + ')'    
+
+    """__str__"""
 
     def channels_request(self):
         query = {key: value for (key, value) in self.__dict__.items() if key != 'resource'}
@@ -193,7 +209,11 @@ class Videos(Resource):
         super().__init__(**kwargs)
         self.resource = self.videos_request()
        
-    """__str__ and __repr__"""
+    def __repr__(self):
+        params = ['{0}={1}'.format(k, v) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
+        return 'Videos(' + ', '.join(params) + ')'   
+
+    """__str__"""
 
     def videos_request(self):
         query = {key: value for (key, value) in self.__dict__.items() if key != 'resource'}
