@@ -33,7 +33,7 @@ class Resource:
     def __repr__(self):
         #lst = [key+'='+str(self.__dict__.get(key)) for key in self.__dict__ if key != 'resource'] #Equivalent to below
         #return 'Resource(' + ', '.join(lst) + ')'
-        params = ['{0}={1}'.format(k, v) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
+        params = ['{0}={1}'.format(k, repr(v)) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
         return 'Resource(' + ', '.join(params) + ')'
     
     """__str__"""
@@ -43,7 +43,6 @@ class PlaylistPage(Resource):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.resource = self.playlistItems_request()
-        self.vid_ids = self.get_vid_ids()
 
         self.first = self.__dict__['pageToken']
         self.next = self.get_next_page_token()
@@ -51,7 +50,9 @@ class PlaylistPage(Resource):
         #self.__dict__['playlistId'] PLAYLIST ID
 
     def __repr__(self):
-        params = ['{0}={1}'.format(k, v) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
+        params = ['{0}={1}'.format(k, repr(v)) for k, v in self.__dict__.items() if (k != 'resource'
+                                                                                        and k !='first'
+                                                                                        and k !='next')] #don't include resource for clarity
         return 'PlaylistPage(' + ', '.join(params) + ')'
 
     """__str__"""
@@ -78,7 +79,7 @@ class PlaylistPage(Resource):
             return []
 
     def get_length(self):
-        return len(self.vid_ids)
+        return len(self.get_vid_ids())
 
     def get_playlist_owner(self):
         """Finds the owner of the playlist, returns a string, raises error if playlist is empty
@@ -110,12 +111,12 @@ class PlaylistItems(PlaylistPage):
         self.get_vid_id_list()
 
     def __repr__(self):
-        params = [repr(page) for page in self.playlist_pages] 
-        return 'PlaylistItems([' + ', '.join(params) + '])' #maybe change?
+        #params = [repr(page) for page in self.playlist_pages] 
+        #return 'PlaylistItems([' + ', '.join(params) + '])' this is probably messy
 
-        """Or use this definition?
-        return 'PlaylistItems(' + self.pl_id + ')'
-        """
+        #use this definition?
+        return 'PlaylistItems(' + repr(self.pl_id) + ')'
+        
 
     """__str__"""
 
@@ -175,7 +176,7 @@ class PlaylistItems(PlaylistPage):
         else:
             return 'Multiple authors: ' + ', '.join(lst)    #authors or owners?
     
-
+    #def get total length, sum all lengths using get_length
 
 class Channels(Resource):
 
@@ -185,7 +186,7 @@ class Channels(Resource):
         self.resource = self.channels_request()
         
     def __repr__(self):
-        params = ['{0}={1}'.format(k, v) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
+        params = ['{0}={1}'.format(k, repr(v)) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
         return 'Channels(' + ', '.join(params) + ')'    
 
     """__str__"""
@@ -210,7 +211,7 @@ class Videos(Resource):
         self.resource = self.videos_request()
        
     def __repr__(self):
-        params = ['{0}={1}'.format(k, v) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
+        params = ['{0}={1}'.format(k, repr(v)) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
         return 'Videos(' + ', '.join(params) + ')'   
 
     """__str__"""
