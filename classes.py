@@ -31,9 +31,7 @@ class Resource:
         yt.close()
 
     def __repr__(self):
-        #lst = [key+'='+str(self.__dict__.get(key)) for key in self.__dict__ if key != 'resource'] #Equivalent to below
-        #return 'Resource(' + ', '.join(lst) + ')'
-        params = ['{0}={1}'.format(k, repr(v)) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
+        params = [f"{k}={repr(v)}" for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
         return 'Resource(' + ', '.join(params) + ')'
     
     """__str__"""
@@ -50,7 +48,7 @@ class PlaylistPage(Resource):
         #self.__dict__['playlistId'] PLAYLIST ID
 
     def __repr__(self):
-        params = ['{0}={1}'.format(k, repr(v)) for k, v in self.__dict__.items() if (k != 'resource'
+        params = [f"{k}={repr(v)}" for k, v in self.__dict__.items() if (k != 'resource'
                                                                                         and k !='first'
                                                                                         and k !='next')] #don't include resource for clarity
         return 'PlaylistPage(' + ', '.join(params) + ')'
@@ -186,7 +184,7 @@ class Channels(Resource):
         self.resource = self.channels_request()
         
     def __repr__(self):
-        params = ['{0}={1}'.format(k, repr(v)) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
+        params = [f"{k}={repr(v)}" for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
         return 'Channels(' + ', '.join(params) + ')'    
 
     """__str__"""
@@ -211,7 +209,7 @@ class Videos(Resource):
         self.resource = self.videos_request()
        
     def __repr__(self):
-        params = ['{0}={1}'.format(k, repr(v)) for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
+        params = [f"{k}={repr(v)}" for k, v in self.__dict__.items() if k != 'resource'] #don't include resource for clarity
         return 'Videos(' + ', '.join(params) + ')'   
 
     """__str__"""
